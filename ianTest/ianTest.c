@@ -10,10 +10,8 @@ Portions of code taken from provided examples
 #include <linux/kernel.h>
 #include <linux/sched.h>
 
-/**
- * Performs a DFS on a given task's children.
- *
- * @void
+/*
+ * Prints all the processes and their children to the proc file.
  */
 void DFS(struct task_struct *task, struct seq_file *m)
 {
@@ -27,28 +25,29 @@ void DFS(struct task_struct *task, struct seq_file *m)
     } else {
       seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
     }
-    //seq_printf(m, "name: %s, pid: [%d], state: %s\n", task->comm, task->pid, processState);
     //printk("name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
     list_for_each(list, &task->children) {
         child = list_entry(list, struct task_struct, sibling);
         DFS(child, m);
     }
 }
-
+/*
+* Call the methods to print to the proc file
+*/
 static int hello_proc_show(struct seq_file *m, void *v) {
-
-//  printk(KERN_INFO "%d", &init_task;
-
   seq_printf(m, "This is a test!\n");
   DFS(&init_task, m);
-  seq_printf(m, "Hello proc!\n");
   return 0;
 }
-
+/*
+* Open the proc file, go do the operations (proc_show)
+*/
 static int hello_proc_open(struct inode *inode, struct  file *file) {
   return single_open(file, hello_proc_show, NULL);
 }
-
+/*
+* Structure for file operations of proc file
+*/
 static const struct file_operations hello_proc_fops = {
   .owner = THIS_MODULE,
   .open = hello_proc_open,
@@ -57,12 +56,17 @@ static const struct file_operations hello_proc_fops = {
   .release = single_release,
 };
 
+/*
+* Where the proc file is created
+*/
 static int __init hello_proc_init(void) {
   proc_create("hello_proc", 0, NULL, &hello_proc_fops);
   //DFS(&init_task);
   return 0;
 }
-
+/*
+* Where the proc file is ended
+*/
 static void __exit hello_proc_exit(void) {
   remove_proc_entry("hello_proc", NULL);
 }
