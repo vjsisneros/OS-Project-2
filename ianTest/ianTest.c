@@ -19,7 +19,15 @@ void DFS(struct task_struct *task, struct seq_file *m)
 {
     struct task_struct *child;
     struct list_head *list;
-    seq_printf(m, "name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
+
+    if (task->state < 0) {
+      seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
+    } else if (task->state == 0) {
+      seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
+    } else {
+      seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
+    }
+    //seq_printf(m, "name: %s, pid: [%d], state: %s\n", task->comm, task->pid, processState);
     //printk("name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
     list_for_each(list, &task->children) {
         child = list_entry(list, struct task_struct, sibling);
