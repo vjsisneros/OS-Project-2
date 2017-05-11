@@ -10,20 +10,46 @@ Portions of code taken from provided examples
 #include <linux/kernel.h>
 #include <linux/sched.h>
 
+static int unrunnable = 0;
+static int runnable = 0;
+static int stopped = 0;
+
 /*
- * Prints all the processes and their children to the proc file.
+ * Incriments the number of unrunanble, runnable, and stopped processes.
  */
-void DFS(struct task_struct *task, struct seq_file *m)
-{
+void getProcessStates(struct task_struct *task, struct seq_file *m) {
     struct task_struct *child;
     struct list_head *list;
 
     if (task->state < 0) {
-      seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
+      unrunnable++;
     } else if (task->state == 0) {
-      seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
+      runnable++;
     } else {
-      seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
+      stopped++;
+    }
+    list_for_each(list, &task->children) {
+        child = list_entry(list, struct task_struct, sibling);
+        getProcessStates(child, m);
+    }
+}
+
+/*
+ * Prints all the processes and their children to the proc file.
+ */
+void DFS(struct task_struct *task, struct seq_file *m) {
+    struct task_struct *child;
+    struct list_head *list;
+
+    if (task->state < 0) {
+      //seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
+
+    } else if (task->state == 0) {
+      //seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
+
+    } else {
+    //  seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
+
     }
     //printk("name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
     list_for_each(list, &task->children) {
@@ -31,12 +57,16 @@ void DFS(struct task_struct *task, struct seq_file *m)
         DFS(child, m);
     }
 }
+
+
+
 /*
 * Call the methods to print to the proc file
 */
 static int hello_proc_show(struct seq_file *m, void *v) {
-  seq_printf(m, "This is a test!\n");
-  DFS(&init_task, m);
+  seq_printf(m, "PROCESS REPORTER\n");
+  getProcessStates(&init_task, m);
+  seq_printf(m, "Unrunnable: %d\nRunnable: %d\nStopped: %d\n", unrunnable, runnable, stopped);
   return 0;
 }
 /*
@@ -61,7 +91,6 @@ static const struct file_operations hello_proc_fops = {
 */
 static int __init hello_proc_init(void) {
   proc_create("hello_proc", 0, NULL, &hello_proc_fops);
-  //DFS(&init_task);
   return 0;
 }
 /*
