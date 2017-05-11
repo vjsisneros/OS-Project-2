@@ -16,19 +16,10 @@ static int stopped = 0;
 
 
 void getChildProcess(struct task_struct *task, struct seq_file *m) {
-    struct task_struct *child;
-    struct list_head *list;
+  //  struct task_struct *child;
+  //  struct list_head *list;
 
-    if (task->state < 0) {
-      //seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
-
-    } else if (task->state == 0) {
-      //seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
-
-    } else {
-    //  seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
-
-    }
+    seq_printf(m, "Process ID=%d Name =%s ", task->pid, task->comm);
 
 }
 
@@ -79,6 +70,14 @@ void DFS(struct task_struct *task, struct seq_file *m) {
     list_for_each(list, &task->children) {
         child = list_entry(list, struct task_struct, sibling);
         getChildProcess(child, m);
+    }
+
+    seq_printf(m, "\n");
+
+    //now use this method recursively to print everthing else
+    list_for_each(list, &task->children) {
+        child = list_entry(list, struct task_struct, sibling);
+        DFS(child, m);
     }
 }
 
