@@ -14,6 +14,24 @@ static int unrunnable = 0;
 static int runnable = 0;
 static int stopped = 0;
 
+
+void getChildProcess(struct task_struct *task, struct seq_file *m) {
+    struct task_struct *child;
+    struct list_head *list;
+
+    if (task->state < 0) {
+      //seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
+
+    } else if (task->state == 0) {
+      //seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
+
+    } else {
+    //  seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
+
+    }
+
+}
+
 /*
  * Incriments the number of unrunanble, runnable, and stopped processes.
  */
@@ -40,23 +58,30 @@ void getProcessStates(struct task_struct *task, struct seq_file *m) {
 void DFS(struct task_struct *task, struct seq_file *m) {
     struct task_struct *child;
     struct list_head *list;
+    int numberOfChildren = 0;
 
-    if (task->state < 0) {
-      //seq_printf(m, "name: %s, pid: [%d], state: Unrunnable\n", task->comm, task->pid);
+    seq_printf(m, "Process ID=%d Name =%s ", task->pid, task->comm);
 
-    } else if (task->state == 0) {
-      //seq_printf(m, "name: %s, pid: [%d], state: Runnable\n", task->comm, task->pid);
-
-    } else {
-    //  seq_printf(m, "name: %s, pid: [%d], state: Stopped\n", task->comm, task->pid);
-
-    }
     //printk("name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
+
+    //increments to get number of children
+    list_for_each(list, &task->children) {
+        numberOfChildren++;
+    }
+    //print number of children to file (or no children)
+    if (numberOfChildren == 0) {
+      seq_printf(m, "*No Children ");
+    } else {
+      seq_printf(m, "number_of_children=%d ", numberOfChildren);
+    }
+
+    //now print out the children information
     list_for_each(list, &task->children) {
         child = list_entry(list, struct task_struct, sibling);
-        DFS(child, m);
+        getChildProcess(child, m);
     }
 }
+
 
 
 
@@ -67,6 +92,7 @@ static int hello_proc_show(struct seq_file *m, void *v) {
   seq_printf(m, "PROCESS REPORTER\n");
   getProcessStates(&init_task, m);
   seq_printf(m, "Unrunnable: %d\nRunnable: %d\nStopped: %d\n", unrunnable, runnable, stopped);
+  DFS(&init_task, m);
   return 0;
 }
 /*
