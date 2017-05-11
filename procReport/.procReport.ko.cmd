@@ -1,1 +1,0 @@
-cmd_/home/ijj/Downloads/procReport/procReport.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/ijj/Downloads/procReport/procReport.ko /home/ijj/Downloads/procReport/procReport.o /home/ijj/Downloads/procReport/procReport.mod.o
