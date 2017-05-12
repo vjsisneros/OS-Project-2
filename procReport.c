@@ -9,6 +9,10 @@ Portions of code taken from provided examples
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>
+#include <linux/string.h>
+
+
+char * numToString(int num);
 
 static int unrunnable = 0;
 static int runnable = 0;
@@ -41,6 +45,7 @@ void getMainProcess(struct task_struct *task, struct seq_file *m) {
     struct task_struct *child;
     struct list_head *list;
     int numberOfChildren = 0;
+    char * str = NULL;
 
     seq_printf(m, "Process ID=%d Name =%s ", task->pid, task->comm);
 
@@ -62,7 +67,9 @@ void getMainProcess(struct task_struct *task, struct seq_file *m) {
     list_for_each(list, &task->children) {
       numberOfChildren++;
         child = list_entry(list, struct task_struct, sibling);
-        seq_printf(m, "%d_child_pid=%d %d_child_name=%s", numberOfChildren, child->pid, numberOfChildren, child->comm);
+        str = numToString(numberOfChildren);
+	//seq_printf(m, "%s", str);
+        seq_printf(m, "%s_child_pid=%d %s_child_name=%s", str, child->pid, str, child->comm);
         //getChildProcess(child, m);
     }
 
@@ -73,6 +80,52 @@ void getMainProcess(struct task_struct *task, struct seq_file *m) {
         child = list_entry(list, struct task_struct, sibling);
         getMainProcess(child, m);
     }
+}
+
+char * numToString(int num) {
+
+	char * hundreds[9] = {"one_hundred", "two_hundred", "three_hundred", "four_hundred", "five_hundred", "six_hundred", "seven_hundred", "eight_hundred", "nine_hundred"};
+	char * tens[9] = {"ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"};
+	char * singles[9] = {"first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth"};
+	char * hSpecials[9] = {"one_hundredth", "two_hundredth", "three_hundredth", "four_hundredth", "five_hundredth", "six_hundredth", "seven_hundredth", "eight_hundredth", "nine_hundredth"};
+	char * tSpecials[9] = {"tenth", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth", "eightieth", "ninetieth"};
+	char * specials[9] = {"eleventh", "twelfth", "thirteenth", "fourteenth", "fifteeth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"};
+
+	static char retString[80];
+	
+	if (num/100 > 0){
+		if (num%100 == 0){
+			strcpy(retString, hSpecials[(num/100)-1]);
+		} else if (num%10 == 0) {
+			strcpy(retString, hundreds[(num/100) - 1]);
+			strcat(retString, "_");
+			strcat(retString, tSpecials[((num%100)/10) - 1]);
+		} else if (num%100 > 10 && num%100 < 20){
+			strcpy(retString, hundreds[(num/100) - 1]);
+			strcat(retString, "_");
+			strcat(retString, specials[((num%100)%10) - 1]);
+		} else {
+			strcpy(retString, hundreds[(num/100) - 1]);
+			strcat(retString, "_");
+			strcat(retString, tens[((num%100)/10) - 1]);
+			strcat(retString, "_");
+			strcat(retString, singles[(num%10) - 1]);
+		}
+	} else if (num/10 > 0) {
+		if (num%10 == 0) {
+			strcpy(retString, tSpecials[(num/10) - 1]);
+		} else if (num > 10 && num < 20){
+			strcpy(retString, specials[(num%10) - 1]);
+		} else {
+			strcpy(retString, tens[(num/10) - 1]);
+			strcat(retString, "_");
+			strcat(retString, singles[(num%10) - 1]);
+		}
+	} else {
+		strcpy(retString, singles[num - 1]);
+	}
+	retString[strlen(retString)] = '\0';
+	return retString;
 }
 
 /*

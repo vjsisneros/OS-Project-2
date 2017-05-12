@@ -25,6 +25,8 @@ __attribute__((section("__versions"))) = {
 	{ 0x8c34c149, __VMLINUX_SYMBOL_STR(proc_create_data) },
 	{ 0x6be0bc63, __VMLINUX_SYMBOL_STR(init_task) },
 	{ 0x74df1d4, __VMLINUX_SYMBOL_STR(seq_printf) },
+	{ 0xf0fdf6cb, __VMLINUX_SYMBOL_STR(__stack_chk_fail) },
+	{ 0xe914e41e, __VMLINUX_SYMBOL_STR(strcpy) },
 	{ 0x16a5a12f, __VMLINUX_SYMBOL_STR(single_open) },
 	{ 0xbdfb6dbb, __VMLINUX_SYMBOL_STR(__fentry__) },
 };
@@ -35,5 +37,5 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "81D17E7B303D30D5106F6E5");
+MODULE_INFO(srcversion, "769E56E0ABED56A0CBE118F");
 MODULE_INFO(rhelversion, "7.3");
