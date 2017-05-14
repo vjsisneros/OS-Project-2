@@ -47,30 +47,21 @@ void getMainProcess(struct task_struct *task, struct seq_file *m) {
     int numberOfChildren = 0;
     char * str = NULL;
 
-    seq_printf(m, "Process ID=%d Name =%s ", task->pid, task->comm);
-
-    //printk("name: %s, pid: [%d], state: %li\n", task->comm, task->pid, task->state);
+    seq_printf(m, "Process ID=%d Name=%s ", task->pid, task->comm);
 
     //increments to get number of children
     list_for_each(list, &task->children) {
         numberOfChildren++;
     }
-    //print number of children to file (or no children)
+    //print number of children to file anch first child info (or no children)
     if (numberOfChildren == 0) {
       seq_printf(m, "*No Children ");
     } else {
-      seq_printf(m, "number_of_children=%d ", numberOfChildren);
-    }
-
-    //now print out the children information
-    numberOfChildren = 0; //reset
-    list_for_each(list, &task->children) {
-      numberOfChildren++;
-        child = list_entry(list, struct task_struct, sibling);
-        str = numToString(numberOfChildren);
-	//seq_printf(m, "%s", str);
-        seq_printf(m, "%s_child_pid=%d %s_child_name=%s", str, child->pid, str, child->comm);
-        //getChildProcess(child, m);
+      seq_printf(m, "number_of_children=%d", numberOfChildren);
+	numberOfChildren = 1; //reset for sake of numToString method
+        child = list_first_entry(list, struct task_struct, sibling);
+        str = numToString(numberOfChildren); //gets string placement value
+        seq_printf(m, " %s_child_pid=%d %s_child_name=%s", str, child->pid, str, child->comm);
     }
 
     seq_printf(m, "\n");
@@ -82,8 +73,11 @@ void getMainProcess(struct task_struct *task, struct seq_file *m) {
     }
 }
 
+/*
+ * Turns integers into words indicating placement, from 1 = "first" to 999 = "nine_hundred_ninety_ninth".
+ */
 char * numToString(int num) {
-
+	//the below arrays contain strings corresponding to a placement value.
 	char * hundreds[9] = {"one_hundred", "two_hundred", "three_hundred", "four_hundred", "five_hundred", "six_hundred", "seven_hundred", "eight_hundred", "nine_hundred"};
 	char * tens[9] = {"ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"};
 	char * singles[9] = {"first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth"};
@@ -93,35 +87,35 @@ char * numToString(int num) {
 
 	static char retString[80];
 	
-	if (num/100 > 0){
-		if (num%100 == 0){
+	if (num/100 > 0){ //if num > 100
+		if (num%100 == 0){ //if num is a multiple of 100
 			strcpy(retString, hSpecials[(num/100)-1]);
-		} else if (num%10 == 0) {
+		} else if (num%10 == 0) { //if num is some value n*100+m*10
 			strcpy(retString, hundreds[(num/100) - 1]);
 			strcat(retString, "_");
 			strcat(retString, tSpecials[((num%100)/10) - 1]);
-		} else if (num%100 > 10 && num%100 < 20){
+		} else if (num%100 > 10 && num%100 < 20){ //if n contains a teen value
 			strcpy(retString, hundreds[(num/100) - 1]);
 			strcat(retString, "_");
 			strcat(retString, specials[((num%100)%10) - 1]);
-		} else {
+		} else { //all other cases
 			strcpy(retString, hundreds[(num/100) - 1]);
 			strcat(retString, "_");
 			strcat(retString, tens[((num%100)/10) - 1]);
 			strcat(retString, "_");
 			strcat(retString, singles[(num%10) - 1]);
 		}
-	} else if (num/10 > 0) {
-		if (num%10 == 0) {
+	} else if (num/10 > 0) { //num > 10 and num < 100
+		if (num%10 == 0) { //if num is some value m*10
 			strcpy(retString, tSpecials[(num/10) - 1]);
-		} else if (num > 10 && num < 20){
+		} else if (num > 10 && num < 20){ //if n contains a teen value
 			strcpy(retString, specials[(num%10) - 1]);
-		} else {
+		} else {//all other cases
 			strcpy(retString, tens[(num/10) - 1]);
 			strcat(retString, "_");
 			strcat(retString, singles[(num%10) - 1]);
 		}
-	} else {
+	} else { //num < 10
 		strcpy(retString, singles[num - 1]);
 	}
 	retString[strlen(retString)] = '\0';
