@@ -1,4 +1,6 @@
 /*
+Alexandria Reynolds
+Ian Jury
 TCSS 422 project 2
 Portions of code taken from provided examples
  */
@@ -86,7 +88,7 @@ char * numToString(int num) {
 	char * specials[9] = {"eleventh", "twelfth", "thirteenth", "fourteenth", "fifteeth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"};
 
 	static char retString[80];
-	
+
 	if (num/100 > 0){ //if num > 100
 		if (num%100 == 0){ //if num is a multiple of 100
 			strcpy(retString, hSpecials[(num/100)-1]);
